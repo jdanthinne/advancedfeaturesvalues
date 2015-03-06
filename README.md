@@ -6,4 +6,4 @@ This allows the selection of multiple values for product features, instead of ju
 This allows the ordering of the features values. This is compatible with the default product page display, showing all selected values in the Features table in the correct order.
 
 ### Changelog
-* 1.0: Initial commit.
+* 1.0.0: Initial commit.
