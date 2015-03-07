@@ -25,6 +25,8 @@ class AdvancedFeaturesValues extends Module
 	{
 		if (!parent::install())
 			return false;
+		$this->_clearCache('*');
+		unlink(_PS_CACHE_DIR_.'class_index.php');
 
 		// Alter DB PRIMARY KEY to allow multiple values
 		if (!Db::getInstance()->execute('
@@ -53,6 +55,8 @@ class AdvancedFeaturesValues extends Module
 	{
 		if (!parent::uninstall())
 			return false;
+		$this->_clearCache('*');
+		unlink(_PS_CACHE_DIR_.'class_index.php');
 
 		// Remove multiple values from DB and restore PRIMARY KEY
 		if (!Db::getInstance()->execute('
