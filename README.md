@@ -9,6 +9,6 @@ This allows the ordering of the features values. This is compatible with the def
 Use the include *advancedfeaturesvalues.zip* file to install via the Modules page, or copy the *advancedfeaturesvalues* folder into the */modules* folder of your Prestashop installation.
 
 ### Changelog
-* 1.0.2: Makes the blocklayered filters reflect the features valures ordering.
+* 1.0.2: Makes the blocklayered filters reflect the features valures ordering. (PS 1.6.0.11+)
 * 1.0.1: Clear caches on (un)install.
 * 1.0.0: Initial commit.
