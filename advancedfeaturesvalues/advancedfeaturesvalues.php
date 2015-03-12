@@ -8,7 +8,7 @@ class AdvancedFeaturesValues extends Module
  	{
 		$this->name = 'advancedfeaturesvalues';
 		$this->tab = 'administration';
-		$this->version = '1.0.2';
+		$this->version = '1.0.3';
 		$this->author = 'Jérôme Danthinne';
 		$this->need_instance = 0;
 		$this->ps_versions_compliancy = array('min' => '1.5.3', 'max' => _PS_VERSION_); 
@@ -23,7 +23,7 @@ class AdvancedFeaturesValues extends Module
 
 	public function install()
 	{
-		if (!parent::install())
+		if (!parent::install() || !$this->registerHook('header'))
 			return false;
 		$this->_clearCache('*');
 		unlink(_PS_CACHE_DIR_.'class_index.php');
@@ -76,4 +76,16 @@ class AdvancedFeaturesValues extends Module
 
 		return true;
 	}
+
+  public function hookHeader($params)
+	{
+		if ((isset($this->context->controller->display_column_left) && !$this->context->controller->display_column_left)
+			&& (isset($this->context->controller->display_column_right) && !$this->context->controller->display_column_right))
+			return false;
+
+		if (Tools::getValue('id_category', Tools::getValue('id_category_layered', Configuration::get('PS_HOME_CATEGORY'))) == Configuration::get('PS_HOME_CATEGORY'))
+			return;
+
+		$this->context->controller->addJS(($this->_path).'blocklayered.js');
+  }
 }
