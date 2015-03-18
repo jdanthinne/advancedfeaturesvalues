@@ -33,7 +33,7 @@ class AdvancedFeaturesValues extends Module
 	{
 		$this->name = 'advancedfeaturesvalues';
 		$this->tab = 'administration';
-		$this->version = '1.0.3';
+		$this->version = '1.0.4';
 		$this->author = 'Jérôme Danthinne';
 		$this->need_instance = 0;
 		$this->ps_versions_compliancy = array('min' => '1.5.3', 'max' => _PS_VERSION_);
@@ -44,10 +44,6 @@ class AdvancedFeaturesValues extends Module
 		$this->displayName = $this->l('Advanced Features Values');
 		$this->description = $this->l('Allows multiple values selection per feature, and features values ordering.');
 		$this->confirmUninstall = $this->l('Are you sure you want to uninstall?');
-
-		/* Backward compatibility */
-		if (_PS_VERSION_ < '1.5')
-			require(_PS_MODULE_DIR_.$this->name.'/backward_compatibility/backward.php');
 	}
 
 	public function install()
