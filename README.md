@@ -6,7 +6,7 @@ This allows the selection of multiple values for product features, instead of ju
 This allows the ordering of the features values. This is compatible with the default product page display, showing all selected values in the Features table in the correct order.
 
 ### Install
-Copy the *advancedfeaturesvalues* folder into the */modules* folder of your Prestashop installation.
+Download and copy the *advancedfeaturesvalues* folder into the */modules* folder of your Prestashop installation.
 
 ### Known issues
 Currently, the installation process fails with PHP version prior to 5.5. Still investigating… Help is welcome!
