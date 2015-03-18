@@ -1,4 +1,28 @@
 <?php
+/**
+* 2007-2014 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Academic Free License (AFL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/afl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author    PrestaShop SA <contact@prestashop.com>
+*  @copyright 2007-2014 PrestaShop SA
+*  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
 class FeatureValue extends FeatureValueCore
 {
@@ -12,8 +36,6 @@ class FeatureValue extends FeatureValueCore
 			'id_feature' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
 			'position' => 	array('type' => self::TYPE_INT, 'validate' => 'isInt'),
 			'custom' => 	array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
-
-			// Lang fields
 			'value' => 		array('type' => self::TYPE_STRING, 'lang' => true, 'validate' => 'isGenericName', 'required' => true, 'size' => 255),
 		),
 	);
@@ -31,12 +53,12 @@ class FeatureValue extends FeatureValueCore
 		');
 	}
 
-	public function add($autodate = true, $nullValues = false)
+	public function add($autodate = true, $null_values = false)
 	{
 		if ($this->position <= 0)
 			$this->position = FeatureValue::getHigherPosition() + 1;
 
-		$return = parent::add($autodate, $nullValues);
+		$return = parent::add($autodate, $null_values);
 		if ($return)
 			Hook::exec('actionFeatureValueSave', array('id_feature_value' => $this->id));
 		return $return;
@@ -71,7 +93,7 @@ class FeatureValue extends FeatureValueCore
 		if (!$res = Db::getInstance()->executeS('
 			SELECT `position`, `id_feature_value`
 			FROM `'._DB_PREFIX_.'feature_value`
-			WHERE `id_feature_value` = '.(int)($id_feature_value ? $id_feature_value : $this->id).'
+			WHERE `id_feature_value` = '.((int)$id_feature_value ? $id_feature_value : $this->id).'
 			ORDER BY `position` ASC'
 		))
 			return false;
@@ -107,37 +129,37 @@ class FeatureValue extends FeatureValueCore
 	public static function cleanPositions()
 	{
 		//Reordering positions to remove "holes" in them (after delete for instance)
-		$sql = "SELECT id_feature_value, position FROM "._DB_PREFIX_."feature_value ORDER BY position";
+		$sql = 'SELECT id_feature_value, position FROM '._DB_PREFIX_.'feature_value ORDER BY position';
 		$db = Db::getInstance();
 		$r = $db->executeS($sql, false);
-		$shiftTable = array(); //List of update queries (one query is necessary for each "hole" in the table)
-		$currentDelta = 0;
-		$minId = 0;
-		$maxId = 0;
-		$futurePosition = 0;
+		$shift_table = array(); //List of update queries (one query is necessary for each "hole" in the table)
+		$current_delta = 0;
+		$min_id = 0;
+		$max_id = 0;
+		$future_position = 0;
 		while ($line = $db->nextRow($r))
 		{
-			$delta = $futurePosition - $line['position']; //Difference between current position and future position
-			if ($delta != $currentDelta)
+			$delta = $future_position - $line['position']; //Difference between current position and future position
+			if ($delta != $current_delta)
 			{
-				$shiftTable[] = array('minId' => $minId, 'maxId' => $maxId, 'delta' => $currentDelta);
-				$currentDelta = $delta;
-				$minId = $line['id_feature_value'];
+				$shift_table[] = array('minId' => $min_id, 'maxId' => $max_id, 'delta' => $current_delta);
+				$current_delta = $delta;
+				$min_id = $line['id_feature_value'];
 			}
-			$futurePosition++;
+			$future_position++;
 		}
 
-		$shiftTable[] = array('minId' => $minId, 'delta' => $currentDelta);
-		
+		$shift_table[] = array('minId' => $min_id, 'delta' => $current_delta);
+
 		//Executing generated queries
-		foreach ($shiftTable as $line)
+		foreach ($shift_table as $line)
 		{
 			$delta = $line['delta'];
 			if ($delta == 0)
 				continue;
 			$delta = $delta > 0 ? '+'.(int)$delta : (int)$delta;
-			$minId = $line['minId'];
-			$sql = 'UPDATE '._DB_PREFIX_.'feature_value SET position = '.(int)$delta.' WHERE id_feature_value = '.(int)$minId;
+			$min_id = $line['minId'];
+			$sql = 'UPDATE '._DB_PREFIX_.'feature_value SET position = '.(int)$delta.' WHERE id_feature_value = '.(int)$min_id;
 			Db::getInstance()->execute($sql);
 		}
 	}
@@ -154,6 +176,10 @@ class FeatureValue extends FeatureValueCore
 		$sql = 'SELECT MAX(`position`)
 				FROM `'._DB_PREFIX_.'feature_value`';
 		$position = DB::getInstance()->getValue($sql);
-		return (is_numeric($position)) ? $position : -1;
+		if (is_numeric($position))
+			$higher_position = $position;
+		else
+			$higher_position = -1;
+		return $higher_position;
 	}
 }

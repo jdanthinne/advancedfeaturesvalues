@@ -1,21 +1,44 @@
 <?php
+/**
+* 2007-2014 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Academic Free License (AFL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/afl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author    PrestaShop SA <contact@prestashop.com>
+*  @copyright 2007-2014 PrestaShop SA
+*  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
 if (!defined('_CAN_LOAD_FILES_'))
-  exit;
+	exit;
 
 class BlockLayeredOverride extends BlockLayered
 {
-  
-  private $page = 1;
 
-  public function getFilterBlock($selected_filters = array())
-  {
-    global $cookie;
+	private $page = 1;
+
+	public function getFilterBlock($selected_filters = array())
+	{
 		static $cache = null;
 
 		$id_lang = Context::getContext()->language->id;
 		$currency = Context::getContext()->currency;
-		$id_shop = (int) Context::getContext()->shop->id;
+		$id_shop = (int)Context::getContext()->shop->id;
 		$alias = 'product_shop';
 
 		if (is_array($cache))
@@ -235,7 +258,10 @@ class BlockLayeredOverride extends BlockLayered
 
 				case 'category':
 					if (Group::isFeatureActive())
-						$this->user_groups =  ($this->context->customer->isLogged() ? $this->context->customer->getGroups() : array(Configuration::get('PS_UNIDENTIFIED_GROUP')));
+					{
+						$this->user_groups = ($this->context->customer->isLogged() ?
+							$this->context->customer->getGroups() : array(Configuration::get('PS_UNIDENTIFIED_GROUP')));
+					}
 
 					$depth = Configuration::get('PS_LAYERED_FILTER_CATEGORY_DEPTH');
 					if ($depth === false)
@@ -251,20 +277,24 @@ class BlockLayeredOverride extends BlockLayered
 					AND '.$alias.'.active = 1 AND '.$alias.'.`visibility` IN ("both", "catalog")';
 					$sql_query['group'] = ') count_products
 					FROM '._DB_PREFIX_.'category c
-					LEFT JOIN '._DB_PREFIX_.'category_lang cl ON (cl.id_category = c.id_category AND cl.`id_shop` = '.(int)Context::getContext()->shop->id.' and cl.id_lang = '.(int)$id_lang.') ';
+					LEFT JOIN '._DB_PREFIX_.'category_lang cl ON
+					(cl.id_category = c.id_category AND cl.`id_shop` = '.(int)Context::getContext()->shop->id.' and cl.id_lang = '.(int)$id_lang.') ';
 
 					if (Group::isFeatureActive())
-						$sql_query['group'] .= 'RIGHT JOIN '._DB_PREFIX_.'category_group cg ON (cg.id_category = c.id_category AND cg.`id_group` IN ('.implode(', ', $this->user_groups).')) ';
+					{
+						$sql_query['group'] .= 'RIGHT JOIN '._DB_PREFIX_.'category_group cg ON
+							(cg.id_category = c.id_category AND cg.`id_group` IN ('.implode(', ', $this->user_groups).')) ';
+					}
 
 					$sql_query['group'] .= 'WHERE c.nleft > '.(int)$parent->nleft.'
 					AND c.nright < '.(int)$parent->nright.'
-					'.($depth ? 'AND c.level_depth <= '.($parent->level_depth+(int)$depth) : '').'
+					'.($depth ? 'AND c.level_depth <= '.($parent->level_depth + (int)$depth) : '').'
 					AND c.active = 1
 					GROUP BY c.id_category ORDER BY c.nleft, c.position';
 			}
 			foreach ($filters as $filter_tmp)
 			{
-				$method_name = 'get'.ucfirst($filter_tmp['type']).'FilterSubQuery';
+				$method_name = 'get'.Tools::ucfirst($filter_tmp['type']).'FilterSubQuery';
 				if (method_exists('BlockLayered', $method_name) &&
 				(!in_array($filter['type'], array('price', 'weight')) && $filter['type'] != $filter_tmp['type'] || $filter['type'] == $filter_tmp['type']))
 				{
@@ -287,12 +317,14 @@ class BlockLayeredOverride extends BlockLayered
 			if (!empty($sql_query['from']))
 			{
 				$sql_query['from'] .= Shop::addSqlAssociation('product', 'p');
-				$products = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql_query['select']."\n".$sql_query['from']."\n".$sql_query['join']."\n".$sql_query['where']."\n".$sql_query['group']."\n".$sql_query['order']);
+				$products = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql_query['select']."\n".
+					$sql_query['from']."\n".$sql_query['join']."\n".$sql_query['where'].
+					"\n".$sql_query['group']."\n".$sql_query['order']);
 			}
 
 			foreach ($filters as $filter_tmp)
 			{
-				$method_name = 'filterProductsBy'.ucfirst($filter_tmp['type']);
+				$method_name = 'filterProductsBy'.Tools::ucfirst($filter_tmp['type']);
 				if (method_exists('BlockLayered', $method_name) &&
 				(!in_array($filter['type'], array('price', 'weight')) && $filter['type'] != $filter_tmp['type'] || $filter['type'] == $filter_tmp['type']))
 					if ($filter['type'] == $filter_tmp['type'])
@@ -311,7 +343,8 @@ class BlockLayeredOverride extends BlockLayered
 			switch ($filter['type'])
 			{
 				case 'price':
-				if ($this->showPriceFilter()) {
+				if ($this->showPriceFilter())
+				{
 					$price_array = array(
 						'type_lite' => 'price',
 						'type' => 'price',
@@ -356,7 +389,6 @@ class BlockLayeredOverride extends BlockLayered
 							if ($nbr_of_value < 2)
 								$nbr_of_value = 4;
 							$delta = ($price_array['max'] - $price_array['min']) / $nbr_of_value;
-							$current_step = $price_array['min'];
 							for ($i = 0; $i < $nbr_of_value; $i++)
 								$price_array['list_of_values'][] = array(
 									(int)($price_array['min'] + $i * $delta),
@@ -432,7 +464,7 @@ class BlockLayeredOverride extends BlockLayered
 						foreach ($products as $product)
 							if (isset($selected_filters['condition']) && in_array($product['condition'], $selected_filters['condition']))
 								$condition_array[$product['condition']]['checked'] = true;
-					foreach ($condition_array as $key => $condition)
+					foreach (array_keys($condition_array) as $key)
 						if (isset($selected_filters['condition']) && in_array($key, $selected_filters['condition']))
 							$condition_array[$key]['checked'] = true;
 					if (isset($products) && $products)
@@ -455,7 +487,7 @@ class BlockLayeredOverride extends BlockLayered
 						0 => array('name' => $this->l('Not available'), 'nbr' => 0),
 						1 => array('name' => $this->l('In stock'), 'nbr' => 0)
 					);
-					foreach ($quantity_array as $key => $quantity)
+					foreach (array_keys($quantity_array) as $key)
 						if (isset($selected_filters['quantity']) && in_array($key, $selected_filters['quantity']))
 							$quantity_array[$key]['checked'] = true;
 					if (isset($products) && $products)
@@ -647,7 +679,7 @@ class BlockLayeredOverride extends BlockLayered
 
 			$param_group_selected = '';
 
-			if (in_array(strtolower($type_filter['type']), array('price', 'weight'))
+			if (in_array(Tools::strtolower($type_filter['type']), array('price', 'weight'))
 				&& (float)$type_filter['values'][0] > (float)$type_filter['min']
 				&& (float)$type_filter['values'][1] > (float)$type_filter['max'])
 			{
@@ -734,18 +766,21 @@ class BlockLayeredOverride extends BlockLayered
 						// Update parameter filter checked before
 						if (array_key_exists(Tools::link_rewrite($filter_name), $option_checked_array))
 						{
-							$option_checked_clone_array[Tools::link_rewrite($filter_name)] = $option_checked_clone_array[Tools::link_rewrite($filter_name)].$this->getAnchor().str_replace($this->getAnchor(), '_', Tools::link_rewrite($value_name));
+							$option_checked_clone_array[Tools::link_rewrite($filter_name)] = $option_checked_clone_array[Tools::link_rewrite($filter_name)].
+								$this->getAnchor().str_replace($this->getAnchor(), '_', Tools::link_rewrite($value_name));
 
 							if (in_array($type_filter['type'], $blacklist))
 								$nofollow = true;
 						}
 						else
-							$option_checked_clone_array[Tools::link_rewrite($filter_name)] = $this->getAnchor().str_replace($this->getAnchor(), '_', Tools::link_rewrite($value_name));
+							$option_checked_clone_array[Tools::link_rewrite($filter_name)] = $this->getAnchor().
+								str_replace($this->getAnchor(), '_', Tools::link_rewrite($value_name));
 					}
 					else
 					{
 						// Remove selected parameters
-						$option_checked_clone_array[Tools::link_rewrite($filter_name)] = str_replace($this->getAnchor().str_replace($this->getAnchor(), '_', Tools::link_rewrite($value_name)), '', $option_checked_clone_array[Tools::link_rewrite($filter_name)]);
+						$option_checked_clone_array[Tools::link_rewrite($filter_name)] = str_replace($this->getAnchor().
+							str_replace($this->getAnchor(), '_', Tools::link_rewrite($value_name)), '', $option_checked_clone_array[Tools::link_rewrite($filter_name)]);
 						if (empty($option_checked_clone_array[Tools::link_rewrite($filter_name)]))
 							unset($option_checked_clone_array[Tools::link_rewrite($filter_name)]);
 					}
@@ -799,9 +834,9 @@ class BlockLayeredOverride extends BlockLayered
 		);
 
 		return $cache;
-  }
-  
-  private static function getCategoryFilterSubQuery($filter_value, $ignore_join)
+	}
+
+	private static function getCategoryFilterSubQuery($filter_value)
 	{
 		if (empty($filter_value))
 			return array();
@@ -813,8 +848,8 @@ class BlockLayeredOverride extends BlockLayered
 
 		return array('where' => $query_filters_where, 'join' => $query_filters_join);
 	}
-	
-	private static function getId_featureFilterSubQuery($filter_value, $ignore_join)
+
+	private static function getId_featureFilterSubQuery($filter_value)
 	{
 		if (empty($filter_value))
 			return array();
@@ -825,7 +860,7 @@ class BlockLayeredOverride extends BlockLayered
 
 		return array('where' => $query_filters);
 	}
-	
+
 	private static function getPriceFilterSubQuery($filter_value)
 	{
 		$id_currency = (int)Context::getContext()->currency->id;
@@ -834,7 +869,8 @@ class BlockLayeredOverride extends BlockLayered
 		{
 			$price_filter_query = '
 			INNER JOIN `'._DB_PREFIX_.'layered_price_index` psi ON (psi.id_product = p.id_product AND psi.id_currency = '.(int)$id_currency.'
-			AND psi.price_min <= '.(int)$filter_value[1].' AND psi.price_max >= '.(int)$filter_value[0].' AND psi.id_shop='.(int)Context::getContext()->shop->id.') ';
+			AND psi.price_min <= '.(int)$filter_value[1].' AND psi.price_max >= '.(int)$filter_value[0].'
+			AND psi.id_shop='.(int)Context::getContext()->shop->id.') ';
 		}
 		else
 		{
@@ -845,8 +881,8 @@ class BlockLayeredOverride extends BlockLayered
 
 		return array('join' => $price_filter_query, 'select' => ', psi.price_min, psi.price_max');
 	}
-	
-	private static function getQuantityFilterSubQuery($filter_value, $ignore_join)
+
+	private static function getQuantityFilterSubQuery($filter_value)
 	{
 		if (count($filter_value) == 2 || empty($filter_value))
 			return array();
@@ -854,7 +890,8 @@ class BlockLayeredOverride extends BlockLayered
 		$query_filters_join = '';
 
 		$query_filters = ' AND sav.quantity '.(!$filter_value[0] ? '<=' : '>').' 0 ';
-		$query_filters_join = 'LEFT JOIN `'._DB_PREFIX_.'stock_available` sav ON (sav.id_product = p.id_product AND sav.id_shop = '.(int)Context::getContext()->shop->id.') ';
+		$query_filters_join = 'LEFT JOIN `'._DB_PREFIX_.'stock_available` sav
+			ON (sav.id_product = p.id_product AND sav.id_shop = '.(int)Context::getContext()->shop->id.') ';
 
 		return array('where' => $query_filters, 'join' => $query_filters_join);
 	}
@@ -871,10 +908,11 @@ class BlockLayeredOverride extends BlockLayered
 			if ($ignore_join)
 				return array('where' => $query_filters, 'select' => ', m.name');
 			else
-				return array('where' => $query_filters, 'select' => ', m.name', 'join' => 'LEFT JOIN `'._DB_PREFIX_.'manufacturer` m ON (m.id_manufacturer = p.id_manufacturer) ');
+				return array('where' => $query_filters, 'select' => ', m.name', 'join' => 'LEFT JOIN `'.
+					_DB_PREFIX_.'manufacturer` m ON (m.id_manufacturer = p.id_manufacturer) ');
 	}
 
-	private static function getConditionFilterSubQuery($filter_value, $ignore_join)
+	private static function getConditionFilterSubQuery($filter_value)
 	{
 		if (count($filter_value) == 3 || empty($filter_value))
 			return array();
@@ -887,7 +925,7 @@ class BlockLayeredOverride extends BlockLayered
 
 		return array('where' => $query_filters);
 	}
-	
+
 	private static function filterProductsByPrice($filter_value, $product_collection)
 	{
 		if (empty($filter_value))
