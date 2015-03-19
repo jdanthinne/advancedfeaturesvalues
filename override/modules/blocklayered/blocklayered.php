@@ -295,7 +295,7 @@ class BlockLayeredOverride extends BlockLayered
 			foreach ($filters as $filter_tmp)
 			{
 				$method_name = 'get'.Tools::ucfirst($filter_tmp['type']).'FilterSubQuery';
-				if (method_exists('BlockLayered', $method_name) &&
+				if (method_exists('BlockLayeredOverride', $method_name) &&
 				(!in_array($filter['type'], array('price', 'weight')) && $filter['type'] != $filter_tmp['type'] || $filter['type'] == $filter_tmp['type']))
 				{
 					if ($filter['type'] == $filter_tmp['type'] && $filter['id_value'] == $filter_tmp['id_value'])
@@ -325,7 +325,7 @@ class BlockLayeredOverride extends BlockLayered
 			foreach ($filters as $filter_tmp)
 			{
 				$method_name = 'filterProductsBy'.Tools::ucfirst($filter_tmp['type']);
-				if (method_exists('BlockLayered', $method_name) &&
+				if (method_exists('BlockLayeredOverride', $method_name) &&
 				(!in_array($filter['type'], array('price', 'weight')) && $filter['type'] != $filter_tmp['type'] || $filter['type'] == $filter_tmp['type']))
 					if ($filter['type'] == $filter_tmp['type'])
 						$products = self::$method_name(array(), $products);
@@ -836,31 +836,6 @@ class BlockLayeredOverride extends BlockLayered
 		return $cache;
 	}
 
-	private static function getCategoryFilterSubQuery($filter_value)
-	{
-		if (empty($filter_value))
-			return array();
-		$query_filters_join = '';
-		$query_filters_where = ' AND p.id_product IN (SELECT id_product FROM '._DB_PREFIX_.'category_product cp WHERE ';
-		foreach ($filter_value as $id_category)
-			$query_filters_where .= 'cp.`id_category` = '.(int)$id_category.' OR ';
-		$query_filters_where = rtrim($query_filters_where, 'OR ').') ';
-
-		return array('where' => $query_filters_where, 'join' => $query_filters_join);
-	}
-
-	private static function getId_featureFilterSubQuery($filter_value)
-	{
-		if (empty($filter_value))
-			return array();
-		$query_filters = ' AND p.id_product IN (SELECT id_product FROM '._DB_PREFIX_.'feature_product fp WHERE ';
-		foreach ($filter_value as $filter_val)
-			$query_filters .= 'fp.`id_feature_value` = '.(int)$filter_val.' OR ';
-		$query_filters = rtrim($query_filters, 'OR ').') ';
-
-		return array('where' => $query_filters);
-	}
-
 	private static function getPriceFilterSubQuery($filter_value)
 	{
 		$id_currency = (int)Context::getContext()->currency->id;
@@ -869,8 +844,7 @@ class BlockLayeredOverride extends BlockLayered
 		{
 			$price_filter_query = '
 			INNER JOIN `'._DB_PREFIX_.'layered_price_index` psi ON (psi.id_product = p.id_product AND psi.id_currency = '.(int)$id_currency.'
-			AND psi.price_min <= '.(int)$filter_value[1].' AND psi.price_max >= '.(int)$filter_value[0].'
-			AND psi.id_shop='.(int)Context::getContext()->shop->id.') ';
+			AND psi.price_min <= '.(int)$filter_value[1].' AND psi.price_max >= '.(int)$filter_value[0].' AND psi.id_shop='.(int)Context::getContext()->shop->id.') ';
 		}
 		else
 		{
@@ -880,50 +854,6 @@ class BlockLayeredOverride extends BlockLayered
 		}
 
 		return array('join' => $price_filter_query, 'select' => ', psi.price_min, psi.price_max');
-	}
-
-	private static function getQuantityFilterSubQuery($filter_value)
-	{
-		if (count($filter_value) == 2 || empty($filter_value))
-			return array();
-
-		$query_filters_join = '';
-
-		$query_filters = ' AND sav.quantity '.(!$filter_value[0] ? '<=' : '>').' 0 ';
-		$query_filters_join = 'LEFT JOIN `'._DB_PREFIX_.'stock_available` sav
-			ON (sav.id_product = p.id_product AND sav.id_shop = '.(int)Context::getContext()->shop->id.') ';
-
-		return array('where' => $query_filters, 'join' => $query_filters_join);
-	}
-
-	private static function getManufacturerFilterSubQuery($filter_value, $ignore_join)
-	{
-		if (empty($filter_value))
-			$query_filters = '';
-		else
-		{
-			array_walk($filter_value, create_function('&$id_manufacturer', '$id_manufacturer = (int)$id_manufacturer;'));
-			$query_filters = ' AND p.id_manufacturer IN ('.implode($filter_value, ',').')';
-		}
-			if ($ignore_join)
-				return array('where' => $query_filters, 'select' => ', m.name');
-			else
-				return array('where' => $query_filters, 'select' => ', m.name', 'join' => 'LEFT JOIN `'.
-					_DB_PREFIX_.'manufacturer` m ON (m.id_manufacturer = p.id_manufacturer) ');
-	}
-
-	private static function getConditionFilterSubQuery($filter_value)
-	{
-		if (count($filter_value) == 3 || empty($filter_value))
-			return array();
-
-		$query_filters = ' AND product_shop.condition IN (';
-
-		foreach ($filter_value as $cond)
-			$query_filters .= '\''.$cond.'\',';
-		$query_filters = rtrim($query_filters, ',').') ';
-
-		return array('where' => $query_filters);
 	}
 
 	private static function filterProductsByPrice($filter_value, $product_collection)
@@ -942,6 +872,98 @@ class BlockLayeredOverride extends BlockLayered
 			}
 		}
 		return $product_collection;
+	}
+
+	private static function getWeightFilterSubQuery($filter_value)
+	{
+		if (isset($filter_value) && $filter_value)
+			if ($filter_value[0] != 0 || $filter_value[1] != 0)
+				return array('where' => ' AND p.`weight` BETWEEN '.(float)($filter_value[0] - 0.001).' AND '.(float)($filter_value[1] + 0.001).' ');
+
+		return array();
+	}
+
+	private static function getId_featureFilterSubQuery($filter_value)
+	{
+		if (empty($filter_value))
+			return array();
+		$query_filters = ' AND p.id_product IN (SELECT id_product FROM '._DB_PREFIX_.'feature_product fp WHERE ';
+		foreach ($filter_value as $filter_val)
+			$query_filters .= 'fp.`id_feature_value` = '.(int)$filter_val.' OR ';
+		$query_filters = rtrim($query_filters, 'OR ').') ';
+
+		return array('where' => $query_filters);
+	}
+	private static function getId_attribute_groupFilterSubQuery($filter_value)
+	{
+		if (empty($filter_value))
+			return array();
+		$query_filters = '
+		AND p.id_product IN (SELECT pa.`id_product`
+		FROM `'._DB_PREFIX_.'product_attribute_combination` pac
+		LEFT JOIN `'._DB_PREFIX_.'product_attribute` pa ON (pa.`id_product_attribute` = pac.`id_product_attribute`)
+		WHERE ';
+
+		foreach ($filter_value as $filter_val)
+			$query_filters .= 'pac.`id_attribute` = '.(int)$filter_val.' OR ';
+		$query_filters = rtrim($query_filters, 'OR ').') ';
+
+		return array('where' => $query_filters);
+	}
+
+	private static function getCategoryFilterSubQuery($filter_value)
+	{
+		if (empty($filter_value))
+			return array();
+		$query_filters_join = '';
+		$query_filters_where = ' AND p.id_product IN (SELECT id_product FROM '._DB_PREFIX_.'category_product cp WHERE ';
+		foreach ($filter_value as $id_category)
+			$query_filters_where .= 'cp.`id_category` = '.(int)$id_category.' OR ';
+		$query_filters_where = rtrim($query_filters_where, 'OR ').') ';
+
+		return array('where' => $query_filters_where, 'join' => $query_filters_join);
+	}
+
+	private static function getQuantityFilterSubQuery($filter_value)
+	{
+		if (count($filter_value) == 2 || empty($filter_value))
+			return array();
+
+		$query_filters_join = '';
+
+		$query_filters = ' AND sav.quantity '.(!$filter_value[0] ? '<=' : '>').' 0 ';
+		$query_filters_join = 'LEFT JOIN `'._DB_PREFIX_.'stock_available` sav ON (sav.id_product = p.id_product AND sav.id_shop = '.(int)Context::getContext()->shop->id.') ';
+
+		return array('where' => $query_filters, 'join' => $query_filters_join);
+	}
+
+	private static function getManufacturerFilterSubQuery($filter_value, $ignore_join)
+	{
+		if (empty($filter_value))
+			$query_filters = '';
+		else
+		{
+			array_walk($filter_value, create_function('&$id_manufacturer', '$id_manufacturer = (int)$id_manufacturer;'));
+			$query_filters = ' AND p.id_manufacturer IN ('.implode($filter_value, ',').')';
+		}
+			if ($ignore_join)
+				return array('where' => $query_filters, 'select' => ', m.name');
+			else
+				return array('where' => $query_filters, 'select' => ', m.name', 'join' => 'LEFT JOIN `'._DB_PREFIX_.'manufacturer` m ON (m.id_manufacturer = p.id_manufacturer) ');
+	}
+
+	private static function getConditionFilterSubQuery($filter_value)
+	{
+		if (count($filter_value) == 3 || empty($filter_value))
+			return array();
+
+		$query_filters = ' AND product_shop.condition IN (';
+
+		foreach ($filter_value as $cond)
+			$query_filters .= '\''.$cond.'\',';
+		$query_filters = rtrim($query_filters, ',').') ';
+
+		return array('where' => $query_filters);
 	}
 
 }
