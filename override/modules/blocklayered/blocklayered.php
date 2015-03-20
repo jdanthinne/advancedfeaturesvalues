@@ -874,7 +874,7 @@ class BlockLayeredOverride extends BlockLayered
 		return $product_collection;
 	}
 
-	private static function getWeightFilterSubQuery($filter_value)
+	private static function getWeightFilterSubQuery($filter_value, $ignore_join)
 	{
 		if (isset($filter_value) && $filter_value)
 			if ($filter_value[0] != 0 || $filter_value[1] != 0)
@@ -883,7 +883,7 @@ class BlockLayeredOverride extends BlockLayered
 		return array();
 	}
 
-	private static function getId_featureFilterSubQuery($filter_value)
+	private static function getId_featureFilterSubQuery($filter_value, $ignore_join)
 	{
 		if (empty($filter_value))
 			return array();
@@ -894,7 +894,7 @@ class BlockLayeredOverride extends BlockLayered
 
 		return array('where' => $query_filters);
 	}
-	private static function getId_attribute_groupFilterSubQuery($filter_value)
+	private static function getId_attribute_groupFilterSubQuery($filter_value, $ignore_join)
 	{
 		if (empty($filter_value))
 			return array();
@@ -911,7 +911,7 @@ class BlockLayeredOverride extends BlockLayered
 		return array('where' => $query_filters);
 	}
 
-	private static function getCategoryFilterSubQuery($filter_value)
+	private static function getCategoryFilterSubQuery($filter_value, $ignore_join)
 	{
 		if (empty($filter_value))
 			return array();
@@ -924,7 +924,7 @@ class BlockLayeredOverride extends BlockLayered
 		return array('where' => $query_filters_where, 'join' => $query_filters_join);
 	}
 
-	private static function getQuantityFilterSubQuery($filter_value)
+	private static function getQuantityFilterSubQuery($filter_value, $ignore_join)
 	{
 		if (count($filter_value) == 2 || empty($filter_value))
 			return array();
@@ -952,7 +952,7 @@ class BlockLayeredOverride extends BlockLayered
 				return array('where' => $query_filters, 'select' => ', m.name', 'join' => 'LEFT JOIN `'._DB_PREFIX_.'manufacturer` m ON (m.id_manufacturer = p.id_manufacturer) ');
 	}
 
-	private static function getConditionFilterSubQuery($filter_value)
+	private static function getConditionFilterSubQuery($filter_value, $ignore_join)
 	{
 		if (count($filter_value) == 3 || empty($filter_value))
 			return array();
