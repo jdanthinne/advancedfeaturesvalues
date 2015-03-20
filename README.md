@@ -9,9 +9,10 @@ This allows the ordering of the features values. This is compatible with the def
 Download and copy the *advancedfeaturesvalues* folder into the */modules* folder of your Prestashop installation.
 
 ### Known issues
-Currently, the installation process fails with PHP version prior to 5.5. Still investigating… Help is welcome!
+Currently, the installation process sometimes fails with PHP version prior to 5.5. Still investigating… Help is welcome!
 
 ### Changelog
+* 1.0.5: Bug fixes and French localization.
 * 1.0.4: Conform the Prestashop module Validator.
 * 1.0.3: Correct ordering in the blocklayered filters after selecting a value and an Ajax request.
 * 1.0.2: Makes the blocklayered filters reflect the features valures ordering. (PS 1.6.0.11+)

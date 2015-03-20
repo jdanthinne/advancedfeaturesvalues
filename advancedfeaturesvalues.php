@@ -33,7 +33,7 @@ class AdvancedFeaturesValues extends Module
 	{
 		$this->name = 'advancedfeaturesvalues';
 		$this->tab = 'administration';
-		$this->version = '1.0.4';
+		$this->version = '1.0.5';
 		$this->author = 'Jérôme Danthinne';
 		$this->need_instance = 0;
 		$this->ps_versions_compliancy = array('min' => '1.5.3', 'max' => _PS_VERSION_);
