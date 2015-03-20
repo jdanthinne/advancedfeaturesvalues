@@ -82,7 +82,8 @@ class AdminFeaturesController extends AdminFeaturesControllerCore
 			$way = (int)Tools::getValue('way');
 			$id = (int)Tools::getValue('id');
 			$table = 'feature';
-			if (empty($positions = Tools::getValue($table)))
+			$positions = Tools::getValue($table);
+			if (empty($positions))
 			{
 				$table = 'feature_value';
 				$positions = Tools::getValue($table);
