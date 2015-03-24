@@ -1,15 +1,14 @@
 # Advanced Features Values for Prestashop
 This is a module for Prestashop 1.5.3+.
+
 ### Multiple feature values
 This allows the selection of multiple values for product features, instead of just one. This is compatible with the default product page display, showing all selected values in the Features table, and with the blocklayered module, which will display all selected values in the facet navigation.
+
 ### Feature values ordering
 This allows the ordering of the features values. This is compatible with the default product page display, showing all selected values in the Features table in the correct order.
 
 ### Install
 Download and copy the *advancedfeaturesvalues* folder into the */modules* folder of your Prestashop installation.
-
-### Known issues
-Currently, the installation process sometimes fails with PHP version prior to 5.5. Still investigating… Help is welcome!
 
 ### Changelog
 * 1.0.6: Fix manual ordering in feature values admin.
