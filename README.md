@@ -12,6 +12,7 @@ Download and copy the *advancedfeaturesvalues* folder into the */modules* folder
 Currently, the installation process sometimes fails with PHP version prior to 5.5. Still investigating… Help is welcome!
 
 ### Changelog
+* 1.0.6: Fix manual ordering in feature values admin.
 * 1.0.5: Bug fixes and French localization.
 * 1.0.4: Conform the Prestashop module Validator.
 * 1.0.3: Correct ordering in the blocklayered filters after selecting a value and an Ajax request.

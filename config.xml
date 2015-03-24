@@ -2,7 +2,7 @@
 <module>
 	<name>advancedfeaturesvalues</name>
 	<displayName><![CDATA[Advanced Features Values]]></displayName>
-	<version><![CDATA[1.0.5]]></version>
+	<version><![CDATA[1.0.6]]></version>
 	<description><![CDATA[Allows multiple values selection per feature, and features values ordering.]]></description>
 	<author><![CDATA[Jérôme Danthinne]]></author>
 	<tab><![CDATA[administration]]></tab>
