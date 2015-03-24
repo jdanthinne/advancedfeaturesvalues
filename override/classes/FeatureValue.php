@@ -56,7 +56,7 @@ class FeatureValue extends FeatureValueCore
 	public function add($autodate = true, $null_values = false)
 	{
 		if ($this->position <= 0)
-			$this->position = FeatureValue::getHigherPosition() + 1;
+			$this->position = FeatureValue::getHigherPosition($this->id_feature) + 1;
 
 		$return = parent::add($autodate, $null_values);
 		if ($return)
@@ -77,7 +77,7 @@ class FeatureValue extends FeatureValueCore
 			Hook::exec('actionFeatureValueDelete', array('id_feature_value' => $this->id));
 
 		/* Reinitializing position */
-		$this->cleanPositions();
+		$this->cleanPositions($this->id_feature);
 
 		return $return;
 	}
@@ -91,7 +91,7 @@ class FeatureValue extends FeatureValueCore
 	public function updatePosition($way, $position, $id_feature_value = null)
 	{
 		if (!$res = Db::getInstance()->executeS('
-			SELECT `position`, `id_feature_value`
+			SELECT `position`, `id_feature_value`, `id_feature`
 			FROM `'._DB_PREFIX_.'feature_value`
 			WHERE `id_feature_value` = '.((int)$id_feature_value ? $id_feature_value : $this->id).'
 			ORDER BY `position` ASC'
@@ -109,72 +109,51 @@ class FeatureValue extends FeatureValueCore
 		// since BETWEEN is treated differently according to databases
 		return (Db::getInstance()->execute('
 			UPDATE `'._DB_PREFIX_.'feature_value`
-			SET `position`= `position` '.($way ? '- 1' : '+ 1').'
-			WHERE `position`
+			SET `position` = `position` '.($way ? '- 1' : '+ 1').'
+			WHERE `id_feature` = '.(int)$moved_feature['id_feature'].'
+			AND `position`
 			'.($way
 				? '> '.(int)$moved_feature['position'].' AND `position` <= '.(int)$position
 				: '< '.(int)$moved_feature['position'].' AND `position` >= '.(int)$position))
 		&& Db::getInstance()->execute('
 			UPDATE `'._DB_PREFIX_.'feature_value`
 			SET `position` = '.(int)$position.'
-			WHERE `id_feature_value`='.(int)$moved_feature['id_feature_value']));
+			WHERE `id_feature_value` = '.(int)$moved_feature['id_feature_value']));
 	}
 
 	/**
 	 * Reorder feature position
-	 * Call it after deleting a feature.
-	 *
+	 * Call it after deleting a feature value.
+	 * @param integer $id_feature
 	 * @return bool $return
 	 */
-	public static function cleanPositions()
+	public static function cleanPositions($id_feature)
 	{
 		//Reordering positions to remove "holes" in them (after delete for instance)
-		$sql = 'SELECT id_feature_value, position FROM '._DB_PREFIX_.'feature_value ORDER BY position';
+		$sql = 'SELECT id_feature_value FROM '._DB_PREFIX_.'feature_value
+		  WHERE id_feature = '.(int)$id_feature.' ORDER BY position';
 		$db = Db::getInstance();
 		$r = $db->executeS($sql, false);
-		$shift_table = array(); //List of update queries (one query is necessary for each "hole" in the table)
-		$current_delta = 0;
-		$min_id = 0;
-		$max_id = 0;
-		$future_position = 0;
+		$current_position = 0;
 		while ($line = $db->nextRow($r))
 		{
-			$delta = $future_position - $line['position']; //Difference between current position and future position
-			if ($delta != $current_delta)
-			{
-				$shift_table[] = array('minId' => $min_id, 'maxId' => $max_id, 'delta' => $current_delta);
-				$current_delta = $delta;
-				$min_id = $line['id_feature_value'];
-			}
-			$future_position++;
-		}
-
-		$shift_table[] = array('minId' => $min_id, 'delta' => $current_delta);
-
-		//Executing generated queries
-		foreach ($shift_table as $line)
-		{
-			$delta = $line['delta'];
-			if ($delta == 0)
-				continue;
-			$delta = $delta > 0 ? '+'.(int)$delta : (int)$delta;
-			$min_id = $line['minId'];
-			$sql = 'UPDATE '._DB_PREFIX_.'feature_value SET position = '.(int)$delta.' WHERE id_feature_value = '.(int)$min_id;
-			Db::getInstance()->execute($sql);
+			$sql = 'UPDATE '._DB_PREFIX_.'feature_value SET position = '.(int)$current_position.' WHERE id_feature_value = '.(int)$line['id_feature_value'];
+			$db->execute($sql);
+			$current_position++;
 		}
 	}
 
 	/**
 	 * getHigherPosition
 	 *
-	 * Get the higher feature position
-	 *
+	 * Get the higher feature value position
+	 * @param integer $id_feature
 	 * @return integer $position
 	 */
-	public static function getHigherPosition()
+	public static function getHigherPosition($id_feature)
 	{
 		$sql = 'SELECT MAX(`position`)
-				FROM `'._DB_PREFIX_.'feature_value`';
+				FROM `'._DB_PREFIX_.'feature_value` WHERE `id_feature` = '.(int)$id_feature;
 		$position = DB::getInstance()->getValue($sql);
 		if (is_numeric($position))
 			$higher_position = $position;

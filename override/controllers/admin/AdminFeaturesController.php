@@ -116,7 +116,7 @@ class AdminFeaturesController extends AdminFeaturesControllerCore
 					{
 						if ($feature_value = new FeatureValue((int)$pos[2]))
 							if (isset($position) && $feature_value->updatePosition($way, $position, $id))
-								echo 'ok position '.(int)$position.' for feature value '.(int)$pos[1].'\r\n';
+								echo 'ok position '.(int)$position.' for feature value '.(int)$pos[2].'\r\n';
 							else
 								echo '{"hasError" : true, "errors" : "Can not update feature value '.(int)$id.' to position '.(int)$position.' "}';
 						else
