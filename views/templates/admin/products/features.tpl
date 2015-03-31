@@ -53,7 +53,7 @@
 						<option value="0">---</option>
 						{foreach from=$available_feature.featureValues item=value}
 						<option value="{$value.id_feature_value}"{if $value.id_feature_value|in_array:$available_feature.current_item}selected="selected"{/if} >
-							{$value.value|truncate:40}
+							{$value.value|truncate:80}
 						</option>
 						{/foreach}
 					</select>
