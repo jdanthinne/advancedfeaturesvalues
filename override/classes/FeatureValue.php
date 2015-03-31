@@ -50,7 +50,7 @@ class FeatureValue extends FeatureValueCore
 			WHERE v.`id_feature` = '.(int)$id_feature.'
 				'.(!$custom ? 'AND (v.`custom` IS NULL OR v.`custom` = 0)' : '').'
 			ORDER BY v.`position` ASC
-		');
+		', true, false);
 	}
 
 	public function add($autodate = true, $null_values = false)
