@@ -50,7 +50,6 @@
 				{if sizeof($available_feature.featureValues)}
 					<select multiple="true" size="6" id="feature_{$available_feature.id_feature|intval}_value" name="feature_{$available_feature.id_feature|intval}_value[]"
 						onchange="$('.custom_{$available_feature.id_feature|intval}_').val('');">
-						<option value="0">---</option>
 						{foreach from=$available_feature.featureValues item=value}
 						<option value="{$value.id_feature_value}"{if $value.id_feature_value|in_array:$available_feature.current_item}selected="selected"{/if} >
 							{$value.value|truncate:80}
