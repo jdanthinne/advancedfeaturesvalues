@@ -11,6 +11,7 @@ This allows the ordering of the features values. This is compatible with the def
 Download and copy the *advancedfeaturesvalues* folder into the */modules* folder of your Prestashop installation.
 
 ### Changelog
+* 1.0.7: Bug fixes.
 * 1.0.6: Fix manual ordering in feature values admin.
 * 1.0.5: Bug fixes and French localization.
 * 1.0.4: Conform the Prestashop module Validator.
