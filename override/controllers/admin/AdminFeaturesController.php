@@ -26,6 +26,108 @@
 
 class AdminFeaturesController extends AdminFeaturesControllerCore
 {
+	public function __construct()
+	{
+		$this->table = 'feature';
+		$this->className = 'Feature';
+		$this->list_id = 'feature';
+		$this->identifier = 'id_feature';
+		$this->lang = true;
+
+		$this->fields_list = array(
+			'id_feature' => array(
+				'title' => $this->l('ID'),
+				'align' => 'center',
+				'class' => 'fixed-width-xs'
+			),
+			'name' => array(
+				'title' => $this->l('Name'),
+				'width' => 'auto',
+				'filter_key' => 'b!name'
+			),
+			'value' => array(
+				'title' => $this->l('Values'),
+				'orderby' => false,
+				'search' => false,
+				'align' => 'center',
+				'class' => 'fixed-width-xs'
+			),
+			'parent_id_feature' => array(
+				'title' => $this->l('ParentID'),
+				'align' => 'center',
+				'class' => 'fixed-width-xs'
+			),
+			'position' => array(
+				'title' => $this->l('Position'),
+				'filter_key' => 'a!position',
+				'align' => 'center',
+				'class' => 'fixed-width-xs',
+				'position' => 'position'
+			)
+		);
+
+		$this->bulk_actions = array(
+			'delete' => array(
+				'text' => $this->l('Delete selected'),
+				'icon' => 'icon-trash',
+				'confirm' => $this->l('Delete selected items?')
+			)
+		);
+		AdminController::__construct();
+	}
+
+	/**
+	 * AdminController::renderForm() override
+	 * @see AdminController::renderForm()
+	 */
+	public function renderForm()
+	{
+		$this->toolbar_title = $this->l('Add a new feature');
+		$this->fields_form = array(
+			'legend' => array(
+				'title' => $this->l('Feature with Parent'),
+				'icon' => 'icon-info-sign'
+			),
+			'input' => array(
+				array(
+					'type' => 'text',
+					'label' => $this->l('Name'),
+					'name' => 'name',
+					'lang' => true,
+					'size' => 33,
+					'hint' => $this->l('Invalid characters:').' <>;=#{}',
+					'required' => true
+				),
+				array(
+					'type' => 'select',
+					'label' => $this->l('Parent Feature'),
+					'name' => 'parent_id_feature',
+					'options' => array(
+						'query' => Feature::getFeaturesExcept($this->context->language->id, Tools::getValue('id_feature')),
+						'id' => 'id_feature',
+						'name' => 'name'
+					),
+					'required' => true
+				)
+			)
+		);
+
+		if (Shop::isFeatureActive())
+		{
+			$this->fields_form['input'][] = array(
+				'type' => 'shop',
+				'label' => $this->l('Shop association'),
+				'name' => 'checkBoxShopAsso',
+			);
+		}
+
+		$this->fields_form['submit'] = array(
+			'title' => $this->l('Save'),
+		);
+
+		return AdminController::renderForm();
+	}
+
 	public function renderView()
 	{
 		if (($id = Tools::getValue('id_feature')))
@@ -58,6 +160,11 @@ class AdminFeaturesController extends AdminFeaturesControllerCore
 				'value' => array(
 					'title' => $this->l('Value')
 				),
+				'parent_id_feature_value' => array(
+					'title' => $this->l('ParentID'),
+					'align' => 'center',
+					'class' => 'fixed-width-xs'
+				),
 				'position' => array(
 					'title' => $this->l('Position'),
 					'filter_key' => 'a!position',
@@ -73,6 +180,105 @@ class AdminFeaturesController extends AdminFeaturesControllerCore
 			$this->processFilter();
 			return AdminController::renderList();
 		}
+	}
+
+	/**
+	 * AdminController::renderForm() override
+	 * @see AdminController::renderForm()
+	 */
+	public function initFormFeatureValue()
+	{
+		$this->setTypeValue();
+
+		$parent_id = Feature::getParentFeatureID((int)Tools::getValue('id_feature'));
+
+		$this->fields_form[0]['form'] = array(
+			'legend' => array(
+				'title' => $this->l('Feature value'),
+				'icon' => 'icon-info-sign'
+			),
+			'input' => array(
+				array(
+					'type' => 'select',
+					'label' => $this->l('Feature'),
+					'name' => 'id_feature',
+					'options' => array(
+						'query' => Feature::getFeatures($this->context->language->id),
+						'id' => 'id_feature',
+						'name' => 'name'
+					),
+					'required' => true
+				),
+				array(
+					'type' => 'text',
+					'label' => $this->l('Value'),
+					'name' => 'value',
+					'lang' => true,
+					'size' => 33,
+					'hint' => $this->l('Invalid characters:').' <>;=#{}',
+					'required' => true
+				),
+				array(
+					'type' => 'select',
+					'label' => $this->l('Parent Feature Value'),
+					'name' => 'parent_id_feature_value',
+					'options' => array(
+						'query' => FeatureValue::getFeatureValuesWithLang($this->context->language->id, $parent_id),
+						'id' => 'id_feature_value',
+						'name' => 'value'
+					),
+					'required' => true
+				),
+			),
+			'submit' => array(
+				'title' => $this->l('Save'),
+			),
+			'buttons' => array(
+				'save-and-stay' => array(
+					'title' => $this->l('Save then add another value'),
+					'name' => 'submitAdd'.$this->table.'AndStay',
+					'type' => 'submit',
+					'class' => 'btn btn-default pull-right',
+					'icon' => 'process-icon-save'
+				)
+			)
+		);
+
+		$this->fields_value['id_feature'] = (int)Tools::getValue('id_feature');
+
+		// Create Object FeatureValue
+		$feature_value = new FeatureValue(Tools::getValue('id_feature_value'));
+
+		$this->tpl_vars = array(
+			'feature_value' => $feature_value,
+		);
+
+		$this->getlanguages();
+		$helper = new HelperForm();
+		$helper->show_cancel_button = true;
+
+		$back = Tools::safeOutput(Tools::getValue('back', ''));
+		if (empty($back))
+			$back = self::$currentIndex.'&token='.$this->token;
+		if (!Validate::isCleanHtml($back))
+			die(Tools::displayError());
+
+		$helper->back_url = $back;
+		$helper->currentIndex = self::$currentIndex;
+		$helper->token = $this->token;
+		$helper->table = $this->table;
+		$helper->identifier = $this->identifier;
+		$helper->override_folder = 'feature_value/';
+		$helper->id = $feature_value->id;
+		$helper->toolbar_scroll = false;
+		$helper->tpl_vars = $this->tpl_vars;
+		$helper->languages = $this->_languages;
+		$helper->default_form_language = $this->default_form_language;
+		$helper->allow_employee_form_lang = $this->allow_employee_form_lang;
+		$helper->fields_value = $this->getFieldsValue($feature_value);
+		$helper->toolbar_btn = $this->toolbar_btn;
+		$helper->title = $this->l('Add a new feature value');
+		$this->content .= $helper->generateForm($this->fields_form);
 	}
 
 	public function ajaxProcessUpdatePositions()

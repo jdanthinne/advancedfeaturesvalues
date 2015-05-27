@@ -27,6 +27,7 @@
 class FeatureValue extends FeatureValueCore
 {
 	public $position;
+	public $parent_id_feature_value;
 
 	public static $definition = array(
 		'table' => 'feature_value',
@@ -34,6 +35,7 @@ class FeatureValue extends FeatureValueCore
 		'multilang' => true,
 		'fields' => array(
 			'id_feature' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
+			'parent_id_feature_value' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => false),
 			'position' => 	array('type' => self::TYPE_INT, 'validate' => 'isInt'),
 			'custom' => 	array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
 			'value' => 		array('type' => self::TYPE_STRING, 'lang' => true, 'validate' => 'isGenericName', 'required' => true, 'size' => 255),

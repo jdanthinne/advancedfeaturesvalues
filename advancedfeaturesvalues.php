@@ -33,8 +33,8 @@ class AdvancedFeaturesValues extends Module
 	{
 		$this->name = 'advancedfeaturesvalues';
 		$this->tab = 'administration';
-		$this->version = '1.0.7';
-		$this->author = 'Jérôme Danthinne';
+		$this->version = '2.0.0';
+		$this->author = 'Muhammad Jawaid Shamshad - based on Jérôme Danthinne module';
 		$this->need_instance = 0;
 		$this->ps_versions_compliancy = array('min' => '1.5.3', 'max' => _PS_VERSION_);
 		$this->bootstrap = true;
@@ -62,6 +62,15 @@ class AdvancedFeaturesValues extends Module
 		if (!Db::getInstance()->execute('
 			ALTER TABLE '._DB_PREFIX_.'feature_value ADD position INT UNSIGNED NOT NULL DEFAULT 0;'))
 			return false;
+		// Add parent_id_feature field to feature
+		if (!Db::getInstance()->execute('
+			ALTER TABLE '._DB_PREFIX_.'feature ADD parent_id_feature INT UNSIGNED DEFAULT NULL;'))
+			return false;
+		// Add parent_id_feature_value field to feature_value
+		if (!Db::getInstance()->execute('
+			ALTER TABLE '._DB_PREFIX_.'feature_value ADD parent_id_feature_value INT UNSIGNED DEFAULT NULL;'))
+			return false;
+
 		$features = Db::getInstance()->executeS('
 			SELECT GROUP_CONCAT(id_feature_value ORDER BY id_feature_value) AS id_feature_value,id_feature
 			FROM '._DB_PREFIX_.'feature_value GROUP BY id_feature;');
@@ -100,6 +109,14 @@ class AdvancedFeaturesValues extends Module
 		// Remove position field from feature_value
 		if (!Db::getInstance()->execute('
 			ALTER TABLE '._DB_PREFIX_.'feature_value DROP position;'))
+			return false;
+		// Remove parent_id_feature_value field from feature_value
+		if (!Db::getInstance()->execute('
+			ALTER TABLE '._DB_PREFIX_.'feature_value DROP parent_id_feature_value;'))
+			return false;
+		// Remove parent_id_feature field from feature
+		if (!Db::getInstance()->execute('
+			ALTER TABLE '._DB_PREFIX_.'feature DROP parent_id_feature;'))
 			return false;
 
 		return true;
