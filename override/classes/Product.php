@@ -48,6 +48,7 @@ class Product extends ProductCore
 		if (!array_key_exists($id_product.'-'.$id_lang, self::$_frontFeaturesCache))
 		{
 			self::$_frontFeaturesCache[$id_product.'-'.$id_lang] = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS('
+				SET @@group_concat_max_len = 4096;
 				SELECT name, GROUP_CONCAT(value ORDER BY fv.position SEPARATOR ", ") AS value, pf.id_feature
 				FROM '._DB_PREFIX_.'feature_product pf
 				LEFT JOIN '._DB_PREFIX_.'feature_lang fl ON (fl.id_feature = pf.id_feature AND fl.id_lang = '.(int)$id_lang.')
