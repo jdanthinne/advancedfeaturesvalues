@@ -11,6 +11,7 @@ This allows the ordering of the features values. This is compatible with the def
 Download and copy the *advancedfeaturesvalues* folder into the */modules* folder of your Prestashop installation.
 
 ### Changelog
+* 1.0.10: Bug fixes.
 * 1.0.9: Bug fixes.
 * 1.0.8: Allows concatenation of features values up to 4096 chars instead of the default 1024 limit.
 * 1.0.7: Bug fixes.
