@@ -9,6 +9,7 @@ This allows the ordering of the features values. This is compatible with the def
 
 ### Install
 Download and copy the *advancedfeaturesvalues* folder into the */modules* folder of your Prestashop installation.
+
 **Important**: be sure to remove the *-master* suffix after downloading the archive from GitHub.
 
 ### Changelog
